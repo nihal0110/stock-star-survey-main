@@ -1,0 +1,15 @@
+export const stockCodes: Record<string, string> = {
+  WIPRO: "WIPRO",
+  HDFC: "HDFCBANK",
+  "TATA MOTORS PASSENGER": "TMPV",
+  "TATA MOTORS COMMERCIAL": "TMCV",
+  "HERO MOTORS": "HEROMOTOCO",
+  "NIFTY BEES": "NIFTYBEES",
+  "GOLD BEES": "GOLDBEES",
+  INFOSYS: "INFY",
+  ZYDUS: "ZYDUSLIFE",
+  ITC: "ITC",
+  NATCO: "NATCOPHARM",
+  TCS: "TCS",
+  ICICI: "ICICIBANK",
+};

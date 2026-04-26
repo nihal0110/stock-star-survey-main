@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,121 +6,162 @@
 
 @layer base {
   :root {
-    --background: 30 25% 97%;
-    --foreground: 20 20% 15%;
+    /* ── Light: clean slate + orange ── */
+    --background: 220 20% 96%;
+    --foreground: 222 47% 10%;
 
-    --card: 30 20% 100%;
-    --card-foreground: 20 20% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 10%;
 
-    --popover: 30 20% 100%;
-    --popover-foreground: 20 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 10%;
 
-    --primary: 24 75% 50%;
+    --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 18% 92%;
-    --secondary-foreground: 20 18% 35%;
+    --secondary: 220 18% 91%;
+    --secondary-foreground: 222 25% 35%;
 
-    --muted: 30 15% 94%;
-    --muted-foreground: 20 10% 48%;
+    --muted: 220 15% 93%;
+    --muted-foreground: 220 15% 42%;
 
-    --accent: 38 90% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 38 95% 54%;
+    --accent-foreground: 222 47% 10%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 86%;
-    --input: 30 15% 86%;
-    --ring: 24 75% 50%;
+    --border: 220 16% 86%;
+    --input: 220 16% 86%;
+    --ring: 25 95% 53%;
+    --radius: 0.5rem;
 
-    --radius: 0.625rem;
-
-    --chart-1: 24 75% 50%;
-    --chart-2: 160 55% 42%;
-    --chart-3: 38 90% 50%;
-    --chart-4: 280 55% 55%;
-    --chart-5: 0 65% 55%;
-
-    --sidebar-background: 30 20% 100%;
-    --sidebar-foreground: 20 18% 35%;
-    --sidebar-primary: 24 75% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 18% 92%;
-    --sidebar-accent-foreground: 20 18% 35%;
-    --sidebar-border: 30 15% 86%;
-    --sidebar-ring: 24 75% 50%;
-
-    --gold: 43 80% 50%;
-    --gold-foreground: 0 0% 100%;
+    /* Dark sidebar used in both light and dark mode */
+    --sidebar-bg: 222 35% 13%;
+    --sidebar-fg: 215 18% 72%;
+    --sidebar-active-bg: 25 95% 53%;
+    --sidebar-active-fg: 0 0% 100%;
+    --sidebar-hover-bg: 222 28% 19%;
+    --sidebar-border: 222 24% 21%;
+    --sidebar-label: 215 13% 48%;
   }
 
   .dark {
-    --background: 20 18% 8%;
-    --foreground: 30 15% 90%;
+    /* ── Dark: deep cool slate ── */
+    --background: 224 22% 7%;
+    --foreground: 215 20% 92%;
 
-    --card: 20 16% 11%;
-    --card-foreground: 30 15% 90%;
+    --card: 224 20% 10%;
+    --card-foreground: 215 20% 92%;
 
-    --popover: 20 16% 13%;
-    --popover-foreground: 30 15% 90%;
+    --popover: 224 20% 12%;
+    --popover-foreground: 215 20% 92%;
 
-    --primary: 24 80% 52%;
-    --primary-foreground: 20 18% 8%;
+    --primary: 22 96% 60%;
+    --primary-foreground: 224 22% 7%;
 
-    --secondary: 20 14% 16%;
-    --secondary-foreground: 30 15% 85%;
+    --secondary: 224 17% 15%;
+    --secondary-foreground: 215 16% 78%;
 
-    --muted: 20 12% 14%;
-    --muted-foreground: 25 10% 50%;
+    --muted: 224 15% 13%;
+    --muted-foreground: 218 13% 56%;
 
-    --accent: 38 90% 55%;
-    --accent-foreground: 20 18% 8%;
+    --accent: 38 95% 58%;
+    --accent-foreground: 224 22% 7%;
 
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 30 15% 98%;
+    --destructive: 0 68% 56%;
+    --destructive-foreground: 215 20% 97%;
 
-    --border: 20 12% 20%;
-    --input: 20 12% 20%;
-    --ring: 24 80% 52%;
+    --border: 224 13% 19%;
+    --input: 224 13% 19%;
+    --ring: 22 96% 60%;
 
-    --chart-1: 24 80% 52%;
-    --chart-2: 160 60% 48%;
-    --chart-3: 38 90% 55%;
-    --chart-4: 280 60% 60%;
-    --chart-5: 0 70% 58%;
-
-    --sidebar-background: 20 16% 11%;
-    --sidebar-foreground: 30 15% 85%;
-    --sidebar-primary: 24 80% 52%;
-    --sidebar-primary-foreground: 20 18% 8%;
-    --sidebar-accent: 20 14% 16%;
-    --sidebar-accent-foreground: 30 15% 85%;
-    --sidebar-border: 20 12% 20%;
-    --sidebar-ring: 24 80% 52%;
-
-    --gold: 43 80% 50%;
-    --gold-foreground: 0 0% 100%;
+    --sidebar-bg: 224 28% 5%;
+    --sidebar-fg: 215 16% 65%;
+    --sidebar-active-bg: 22 96% 56%;
+    --sidebar-active-fg: 0 0% 100%;
+    --sidebar-hover-bg: 224 22% 11%;
+    --sidebar-border: 224 20% 11%;
+    --sidebar-label: 218 12% 42%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
+
+  html { font-size: 15px; }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 450;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.55;
   }
+
+  h1, h2, h3, h4 { font-weight: 600; }
 
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: "tnum", "zero";
   }
+
+  table { border-collapse: collapse; width: 100%; }
+  thead th {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  tbody td { font-size: 0.875rem; }
+
+  input, select, textarea {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/30; }
+}
+
+@layer components {
+  /* Sidebar */
+  .sidebar-shell {
+    background: hsl(var(--sidebar-bg));
+    border-right: 1px solid hsl(var(--sidebar-border));
+  }
+  .sidebar-nav-item {
+    @apply flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-100;
+    color: hsl(var(--sidebar-fg));
+  }
+  .sidebar-nav-item:hover {
+    background: hsl(var(--sidebar-hover-bg));
+    color: hsl(215 20% 90%);
+  }
+  .sidebar-nav-item.active {
+    background: hsl(var(--sidebar-active-bg));
+    color: hsl(var(--sidebar-active-fg));
+    font-weight: 600;
+  }
+  .sidebar-section-label {
+    display: block;
+    font-size: 0.63rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--sidebar-label));
+    padding: 0 0.75rem 0.375rem;
+  }
+
+  /* Card shadow */
+  .bg-card {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  }
+  .dark .bg-card { box-shadow: none; }
 }
 
 @media print {
-  .no-print {
-    display: none !important;
-  }
+  .no-print { display: none !important; }
 }

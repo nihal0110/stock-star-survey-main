@@ -1,0 +1,203 @@
+{
+  "stocks": [
+    {
+      "id": "stock-001",
+      "stockName": "RELIANCE",
+      "sector": "Energy",
+      "date": "2022-03-10",
+      "amount": 25000,
+      "quantity": 10,
+      "charges": 25,
+      "notes": "Long term hold",
+      "status": "hold"
+    },
+    {
+      "id": "stock-002",
+      "stockName": "RELIANCE",
+      "sector": "Energy",
+      "date": "2022-09-15",
+      "amount": 26500,
+      "quantity": 10,
+      "charges": 26,
+      "status": "hold"
+    },
+    {
+      "id": "stock-003",
+      "stockName": "INFY",
+      "sector": "IT",
+      "date": "2022-05-20",
+      "amount": 30000,
+      "quantity": 20,
+      "charges": 30,
+      "status": "hold"
+    },
+    {
+      "id": "stock-004",
+      "stockName": "HDFCBANK",
+      "sector": "Banking",
+      "date": "2022-07-08",
+      "amount": 40000,
+      "quantity": 25,
+      "charges": 40,
+      "status": "hold"
+    },
+    {
+      "id": "stock-005",
+      "stockName": "HDFCBANK",
+      "sector": "Banking",
+      "date": "2023-02-14",
+      "amount": 38000,
+      "quantity": 24,
+      "charges": 38,
+      "status": "hold"
+    },
+    {
+      "id": "stock-006",
+      "stockName": "TATAPOWER",
+      "sector": "Energy",
+      "date": "2023-01-05",
+      "amount": 15000,
+      "quantity": 60,
+      "charges": 15,
+      "status": "hold"
+    },
+    {
+      "id": "stock-007",
+      "stockName": "TATAMOTORS",
+      "sector": "Automobile",
+      "date": "2022-11-22",
+      "amount": 20000,
+      "quantity": 25,
+      "charges": 20,
+      "status": "hold"
+    },
+    {
+      "id": "stock-008",
+      "stockName": "SBIN",
+      "sector": "Banking",
+      "date": "2023-04-03",
+      "amount": 18000,
+      "quantity": 30,
+      "charges": 18,
+      "status": "hold"
+    },
+    {
+      "id": "stock-009",
+      "stockName": "MUTUALFUND",
+      "sector": "Mutual Fund",
+      "date": "2023-06-01",
+      "amount": 1000,
+      "quantity": 0,
+      "charges": 0,
+      "notes": "Lump sum SIP — units not tracked",
+      "status": "hold"
+    },
+    {
+      "id": "stock-010",
+      "stockName": "WIPRO",
+      "sector": "IT",
+      "date": "2022-06-15",
+      "amount": 12000,
+      "quantity": 30,
+      "charges": 12,
+      "status": "sold",
+      "sellDate": "2023-08-10",
+      "sellAmount": 15500,
+      "sellCharges": 15,
+      "sellNotes": "Booked partial profits"
+    }
+  ],
+  "gold": [
+    {
+      "id": "gold-001",
+      "date": "2022-04-18",
+      "quality": "22K",
+      "quantity": 10,
+      "amount": 50000,
+      "charges": 800,
+      "tax": 1500,
+      "status": "hold"
+    },
+    {
+      "id": "gold-002",
+      "date": "2023-01-12",
+      "quality": "24K",
+      "quantity": 5,
+      "amount": 30000,
+      "charges": 400,
+      "tax": 900,
+      "status": "hold"
+    },
+    {
+      "id": "gold-003",
+      "date": "2021-11-05",
+      "quality": "22K",
+      "quantity": 8,
+      "amount": 35000,
+      "charges": 600,
+      "tax": 1050,
+      "status": "sold",
+      "sellDate": "2023-03-20",
+      "sellAmount": 46000,
+      "sellCharges": 500,
+      "sellNotes": "Anniversary purchase — sold for home renovation"
+    }
+  ],
+  "dividends": [
+    {
+      "id": "div-001",
+      "stockName": "RELIANCE",
+      "date": "2022-08-20",
+      "amount": 200
+    },
+    {
+      "id": "div-002",
+      "stockName": "HDFCBANK",
+      "date": "2023-05-15",
+      "amount": 375
+    },
+    {
+      "id": "div-003",
+      "stockName": "INFY",
+      "date": "2023-07-28",
+      "amount": 550
+    }
+  ],
+  "targets": {
+    "RELIANCE": {
+      "price": 3200,
+      "setAt": "2024-01-10",
+      "history": [
+        { "price": 2800, "setAt": "2023-06-01" }
+      ]
+    },
+    "HDFCBANK": {
+      "price": 1900,
+      "setAt": "2024-02-05",
+      "history": []
+    }
+  },
+  "watchlist": [
+    {
+      "symbol": "TCS",
+      "addedAt": "2024-01-20",
+      "note": "Waiting for 3500 entry"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "addedAt": "2024-03-08",
+      "note": "Strong fundamentals, watching for correction"
+    }
+  ],
+  "sectorTargets": {},
+  "goals": [
+    {
+      "id": "goal-001",
+      "name": "Emergency Fund via Stocks",
+      "targetAmount": 500000,
+      "targetDate": "2026-12-31",
+      "createdAt": "2023-01-01"
+    }
+  ],
+  "sells": []
+}

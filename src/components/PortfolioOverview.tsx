@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { InvestmentEntry, DividendEntry } from "@/types/investment";
 import { calculatePortfolio } from "@/lib/calculations";
+import { fmt, daysHeld } from "@/lib/format";
 import { TrendingUp, PieChart, Gift } from "lucide-react";
 
 interface Props {
@@ -13,9 +15,9 @@ export default function PortfolioOverview({
   dividendEntries = [],
   title = "Portfolio Overview",
 }: Props) {
-  const { totalInvested, stocks, sectors, totalDividends } = calculatePortfolio(
-    entries,
-    dividendEntries
+  const { totalInvested, stocks, sectors, totalDividends } = useMemo(
+    () => calculatePortfolio(entries, dividendEntries),
+    [entries, dividendEntries],
   );
 
   if (entries.length === 0) {
@@ -29,7 +31,6 @@ export default function PortfolioOverview({
 
   return (
     <div className="space-y-8">
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-3 mb-1">
@@ -38,33 +39,25 @@ export default function PortfolioOverview({
               {title} — Total Invested
             </span>
           </div>
-          <p className="text-4xl font-mono font-bold text-primary">
-            ₹{totalInvested.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-          </p>
+          <p className="text-4xl font-mono font-bold text-primary">₹{fmt(totalInvested)}</p>
         </div>
 
         {totalDividends > 0 && (
           <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center gap-3 mb-1">
-              <Gift className="h-5 w-5 text-green-500" />
+              <Gift className="h-5 w-5 text-primary" />
               <span className="text-muted-foreground text-sm uppercase tracking-wider">
-                Total Dividends Received
+                Dividends Reinvested
               </span>
             </div>
-            <p className="text-4xl font-mono font-bold text-green-500">
-              ₹{totalDividends.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-            </p>
+            <p className="text-4xl font-mono font-bold text-foreground">₹{fmt(totalDividends)}</p>
             <p className="text-xs text-muted-foreground mt-1 font-mono">
-              Effective cost reduced to ₹
-              {(totalInvested - totalDividends).toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-              })}
+              {((totalDividends / totalInvested) * 100).toFixed(2)}% yield · compounding via reinvestment
             </p>
           </div>
         )}
       </div>
 
-      {/* Stock Breakdown */}
       <div>
         <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">
           Stock Breakdown
@@ -79,6 +72,7 @@ export default function PortfolioOverview({
                   <th className="px-4 py-3 text-right">Total Invested</th>
                   <th className="px-4 py-3 text-right">Total Qty</th>
                   <th className="px-4 py-3 text-right">Avg Price</th>
+                  <th className="px-4 py-3 text-right">Days Held</th>
                   <th className="px-4 py-3 text-right">Dividends</th>
                   <th className="px-4 py-3 text-right">Allocation %</th>
                 </tr>
@@ -95,18 +89,20 @@ export default function PortfolioOverview({
                         {stock.stockName}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{stock.sector}</td>
-                      <td className="px-4 py-3 font-mono text-right">
-                        ₹{stock.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                      </td>
+                      <td className="px-4 py-3 font-mono text-right">₹{fmt(stock.totalAmount)}</td>
                       <td className="px-4 py-3 font-mono text-right">{stock.totalQuantity}</td>
-                      <td className="px-4 py-3 font-mono text-right">
-                        ₹{stock.avgPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      <td className="px-4 py-3 font-mono text-right">₹{fmt(stock.avgPrice)}</td>
+                      <td className="px-4 py-3 font-mono text-right text-muted-foreground">
+                        {daysHeld(stock.firstPurchaseDate)}d
                       </td>
                       <td className="px-4 py-3 font-mono text-right">
                         {stock.totalDividend > 0 ? (
-                          <span className="text-green-500">
-                            ₹{stock.totalDividend.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                          </span>
+                          <div>
+                            <span className="text-foreground">₹{fmt(stock.totalDividend)}</span>
+                            <p className="text-[10px] text-muted-foreground">
+                              {((stock.totalDividend / stock.totalAmount) * 100).toFixed(2)}% ↺
+                            </p>
+                          </div>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
@@ -132,7 +128,6 @@ export default function PortfolioOverview({
         </div>
       </div>
 
-      {/* Sector Allocation */}
       <div>
         <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">
           Sector Allocation
@@ -155,7 +150,7 @@ export default function PortfolioOverview({
                   />
                 </div>
                 <p className="text-xs font-mono text-muted-foreground mt-2">
-                  ₹{sector.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹{fmt(sector.totalAmount)}
                 </p>
               </div>
             ))}

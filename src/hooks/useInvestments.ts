@@ -1,120 +1,135 @@
-import { useState, useEffect } from "react";
-import { InvestmentEntry, GoldEntry, DividendEntry } from "@/types/investment";
+import { useState, useEffect, useCallback } from "react";
+import { InvestmentEntry, GoldEntry, DividendEntry, Target, WatchlistEntry, Goal } from "@/types/investment";
+
+const API = "http://localhost:3001";
 
 export function useInvestments() {
   const [entries, setEntries] = useState<InvestmentEntry[]>([]);
   const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([]);
   const [dividendEntries, setDividendEntries] = useState<DividendEntry[]>([]);
+  const [targets, setTargets] = useState<Record<string, Target>>({});
+  const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/stock")
-      .then((r) => r.json())
-      .then((d) => setEntries(d))
-      .catch(() => {});
+    fetch(`${API}/stock`).then((r) => r.json()).then(setEntries).catch(() => {});
+    fetch(`${API}/gold`).then((r) => r.json()).then(setGoldEntries).catch(() => {});
+    fetch(`${API}/dividend`).then((r) => r.json()).then(setDividendEntries).catch(() => {});
+    fetch(`${API}/targets`).then((r) => r.json()).then(setTargets).catch(() => {});
+    fetch(`${API}/watchlist`).then((r) => r.json()).then(setWatchlist).catch(() => {});
+    fetch(`${API}/goals`).then((r) => r.json()).then(setGoals).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    fetch("http://localhost:3001/gold")
-      .then((r) => r.json())
-      .then((d) => setGoldEntries(d))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    fetch("http://localhost:3001/dividend")
-      .then((r) => r.json())
-      .then((d) => setDividendEntries(d))
-      .catch(() => {});
-  }, []);
-
-  // ── Stock ──────────────────────────────────────────────────────────────────
 
   const addStockEntry = async (entry: Omit<InvestmentEntry, "id">) => {
-    const res = await fetch("http://localhost:3001/stock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/stock`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...entry, id: crypto.randomUUID() }),
     });
-    const data = await res.json();
-    setEntries(data.data);
+    setEntries((await res.json()).data);
   };
 
   const editStockEntry = async (entry: InvestmentEntry) => {
-    const res = await fetch(`http://localhost:3001/stock/${entry.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/stock/${entry.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entry),
     });
-    const data = await res.json();
-    setEntries(data.data);
+    setEntries((await res.json()).data);
   };
 
   const deleteStockEntry = async (id: string) => {
-    const res = await fetch(`http://localhost:3001/stock/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    setEntries(data.data);
+    const res = await fetch(`${API}/stock/${id}`, { method: "DELETE" });
+    setEntries((await res.json()).data);
   };
 
-  // ── Gold ───────────────────────────────────────────────────────────────────
-
   const addGoldEntry = async (entry: Omit<GoldEntry, "id">) => {
-    const res = await fetch("http://localhost:3001/gold", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/gold`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...entry, id: crypto.randomUUID() }),
     });
-    const data = await res.json();
-    setGoldEntries(data.data);
+    setGoldEntries((await res.json()).data);
   };
 
   const editGoldEntry = async (entry: GoldEntry) => {
-    const res = await fetch(`http://localhost:3001/gold/${entry.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/gold/${entry.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entry),
     });
-    const data = await res.json();
-    setGoldEntries(data.data);
+    setGoldEntries((await res.json()).data);
   };
 
   const deleteGoldEntry = async (id: string) => {
-    const res = await fetch(`http://localhost:3001/gold/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    setGoldEntries(data.data);
+    const res = await fetch(`${API}/gold/${id}`, { method: "DELETE" });
+    setGoldEntries((await res.json()).data);
   };
 
-  // ── Dividend ───────────────────────────────────────────────────────────────
-
   const addDividendEntry = async (entry: Omit<DividendEntry, "id">) => {
-    const res = await fetch("http://localhost:3001/dividend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/dividend`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...entry, id: crypto.randomUUID() }),
     });
-    const data = await res.json();
-    setDividendEntries(data.data);
+    setDividendEntries((await res.json()).data);
   };
 
   const editDividendEntry = async (entry: DividendEntry) => {
-    const res = await fetch(`http://localhost:3001/dividend/${entry.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch(`${API}/dividend/${entry.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entry),
     });
-    const data = await res.json();
-    setDividendEntries(data.data);
+    setDividendEntries((await res.json()).data);
   };
 
   const deleteDividendEntry = async (id: string) => {
-    const res = await fetch(`http://localhost:3001/dividend/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    setDividendEntries(data.data);
+    const res = await fetch(`${API}/dividend/${id}`, { method: "DELETE" });
+    setDividendEntries((await res.json()).data);
   };
 
-  // ── Import / Export ────────────────────────────────────────────────────────
+  const saveTarget = useCallback(async (stockName: string, price: number | null) => {
+    const res = await fetch(`${API}/targets/${encodeURIComponent(stockName)}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ price }),
+    });
+    setTargets((await res.json()).data);
+  }, []);
+
+  const addToWatchlist = async (symbol: string, note: string) => {
+    const res = await fetch(`${API}/watchlist`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbol, note }),
+    });
+    setWatchlist((await res.json()).data);
+  };
+
+  const removeFromWatchlist = async (symbol: string) => {
+    const res = await fetch(`${API}/watchlist/${encodeURIComponent(symbol)}`, { method: "DELETE" });
+    setWatchlist((await res.json()).data);
+  };
+
+  const addGoal = async (goal: Omit<Goal, "id" | "createdAt">) => {
+    const res = await fetch(`${API}/goals`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...goal, id: crypto.randomUUID(), createdAt: new Date().toISOString().split("T")[0] }),
+    });
+    setGoals((await res.json()).data);
+  };
+
+  const editGoal = async (goal: Goal) => {
+    const res = await fetch(`${API}/goals/${goal.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(goal),
+    });
+    setGoals((await res.json()).data);
+  };
+
+  const deleteGoal = async (id: string) => {
+    const res = await fetch(`${API}/goals/${id}`, { method: "DELETE" });
+    setGoals((await res.json()).data);
+  };
 
   const exportData = () => {
-    const data = JSON.stringify({ stocks: entries, gold: goldEntries, dividends: dividendEntries }, null, 2);
+    const data = JSON.stringify(
+      { stocks: entries, gold: goldEntries, dividends: dividendEntries, targets },
+      null, 2
+    );
     const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -132,6 +147,7 @@ export function useInvestments() {
         if (data.stocks) setEntries(data.stocks);
         if (data.gold) setGoldEntries(data.gold);
         if (data.dividends) setDividendEntries(data.dividends);
+        if (data.targets) setTargets(data.targets);
       } catch {
         alert("Invalid file format");
       }
@@ -140,18 +156,12 @@ export function useInvestments() {
   };
 
   return {
-    entries,
-    addStockEntry,
-    editStockEntry,
-    deleteStockEntry,
-    goldEntries,
-    addGoldEntry,
-    editGoldEntry,
-    deleteGoldEntry,
-    dividendEntries,
-    addDividendEntry,
-    editDividendEntry,
-    deleteDividendEntry,
+    entries, addStockEntry, editStockEntry, deleteStockEntry,
+    goldEntries, addGoldEntry, editGoldEntry, deleteGoldEntry,
+    dividendEntries, addDividendEntry, editDividendEntry, deleteDividendEntry,
+    targets, saveTarget,
+    watchlist, addToWatchlist, removeFromWatchlist,
+    goals, addGoal, editGoal, deleteGoal,
     exportData,
     importData,
   };
