@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { BarChart3, Download, Upload, Printer, Sun, Moon, Menu } from "lucide-react";
+import { BarChart3, Download, Upload, Printer, Sun, Moon, Menu, TrendingUp, Wallet } from "lucide-react";
 
 interface Props {
   theme: string;
@@ -7,9 +7,11 @@ interface Props {
   onExport: () => void;
   onImport: (file: File) => void;
   onMenuToggle: () => void;
+  mode: "investment" | "expense";
+  onModeChange: (mode: "investment" | "expense") => void;
 }
 
-export default function AppHeader({ theme, onToggleTheme, onExport, onImport, onMenuToggle }: Props) {
+export default function AppHeader({ theme, onToggleTheme, onExport, onImport, onMenuToggle, mode, onModeChange }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +40,23 @@ export default function AppHeader({ theme, onToggleTheme, onExport, onImport, on
         <span className="font-bold text-base tracking-tight hidden sm:block text-white">
           Stock<span className="text-primary">Star</span>
         </span>
+      </div>
+
+      {/* Mode toggle */}
+      <div className="flex items-center rounded-lg p-0.5 mx-2" style={{ background: "hsl(var(--sidebar-hover-bg))" }}>
+        {(["investment", "expense"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => onModeChange(m)}
+            className="flex items-center gap-1.5 h-7 px-3 rounded-md text-xs font-medium transition-all duration-150"
+            style={mode === m
+              ? { background: "hsl(var(--primary))", color: "white" }
+              : { color: "hsl(var(--sidebar-fg))" }}
+          >
+            {m === "investment" ? <TrendingUp className="h-3.5 w-3.5" /> : <Wallet className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{m === "investment" ? "Investments" : "Expenses"}</span>
+          </button>
+        ))}
       </div>
 
       <div className="flex-1" />

@@ -31,7 +31,7 @@ export function useLivePrices() {
       uniqueSymbols.map(async (symbol) => {
         try {
           const ticker = stockCodes[symbol.toUpperCase()] ?? symbol;
-          const res = await fetch(
+            const res = await fetch(
             `http://localhost:3001/live-price/${encodeURIComponent(ticker)}`,
           );
           const data = await res.json();

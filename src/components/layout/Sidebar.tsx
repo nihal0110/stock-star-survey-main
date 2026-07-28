@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Activity, BarChart3, SlidersHorizontal,
-  PlusCircle, TrendingDown, Gift, Coins,
-  Search, Scale, GitFork, CalendarDays, Trophy,
+  PlusCircle, TrendingDown, Gift, Coins, TrendingUp,
+  Search, Scale, GitFork, CalendarDays, Trophy, Brain, BookOpen, CalendarRange,
   type LucideIcon,
 } from "lucide-react";
 
@@ -15,9 +15,10 @@ const NAV: NavGroup[] = [
   {
     label: "Portfolio",
     items: [
-      { id: "live",     label: "Live P&L",  icon: Activity },
-      { id: "overview", label: "Overview",  icon: BarChart3 },
-      { id: "filtered", label: "Filtered",  icon: SlidersHorizontal },
+      { id: "live",         label: "Live P&L",    icon: Activity },
+      { id: "overview",     label: "Overview",    icon: BarChart3 },
+      { id: "filtered",     label: "Filtered",    icon: SlidersHorizontal },
+      { id: "monthly",      label: "Monthly SIP", icon: CalendarRange },
     ],
   },
   {
@@ -27,6 +28,7 @@ const NAV: NavGroup[] = [
       { id: "sells",     label: "Sell",      icon: TrendingDown },
       { id: "dividends", label: "Dividends", icon: Gift },
       { id: "gold",      label: "Gold",      icon: Coins },
+      { id: "mf",        label: "Mutual Funds", icon: TrendingUp },
     ],
   },
   {
@@ -37,6 +39,8 @@ const NAV: NavGroup[] = [
       { id: "rebalance",    label: "Rebalance",    icon: GitFork },
       { id: "div-calendar", label: "Div Calendar", icon: CalendarDays },
       { id: "goals",        label: "Goals",        icon: Trophy },
+      { id: "buffett",      label: "Buffett Bot",  icon: Brain },
+      { id: "fundamentals", label: "Fundamentals", icon: BookOpen },
     ],
   },
 ];

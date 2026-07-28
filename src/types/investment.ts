@@ -68,10 +68,92 @@ export interface Goal {
   createdAt: string;
 }
 
+export interface FundamentalHistoricalRow {
+  year: number;
+  pe: number;
+  pb: number;
+  profit: number;
+  revenue: number;
+}
+
+export interface FundamentalScores {
+  moat: number;
+  management: number;
+  roe: number;
+  debt: number;
+  earningsGrowth: number;
+  understandable: number;
+  valuePrice: number;
+}
+
+export interface StockFundamental {
+  id: string;
+  stockName: string;
+  currentPrice: number;
+  currentPE: number;
+  currentPB: number;
+  scores: FundamentalScores;
+  history: FundamentalHistoricalRow[];
+}
+
+export interface SellEntry {
+  id: string;
+  stockName: string;
+  sector: string;
+  sellDate: string;
+  quantity: number;
+  sellAmount: number;
+  sellCharges: number;
+  sellNotes?: string;
+}
+
+export interface HoldingData {
+  stockName: string;
+  sector: string;
+  qty: number;
+  totalCost: number;
+  avgPrice: number;
+}
+
+export interface MutualFundEntry {
+  id: string;
+  fundName: string;
+  code: string;
+  category: string;
+  date: string;
+  units: number;
+  nav: number;
+  amount: number;
+  charges: number;
+  notes?: string;
+}
+
+export interface MfSellEntry {
+  id: string;
+  fundName: string;
+  code: string;
+  category: string;
+  sellDate: string;
+  units: number;
+  sellAmount: number;
+  sellCharges: number;
+  sellNotes?: string;
+}
+
+export interface MfHoldingData {
+  fundName: string;
+  code: string;
+  category: string;
+  units: number;
+  totalCost: number;
+  avgNav: number;
+}
+
 export interface WatchlistEntry {
   symbol: string;
   addedAt: string;
   note: string;
+  sector?: string;
 }
 
 export interface StockInfo {

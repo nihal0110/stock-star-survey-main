@@ -12,4 +12,9 @@ export const stockCodes: Record<string, string> = {
   NATCO: "NATCOPHARM",
   TCS: "TCS",
   ICICI: "ICICIBANK",
+  "DR. REDDY'S LABORATORIES": "DRREDDY",
+  "FEDERAL BANK": "FEDERALBNK",
+  "SOUTH INDIAN BANK": "SOUTHBANK",
+  "POWER GRID": "POWERGRID",
+  "AMARA RAJA": "ARE&M",
 };

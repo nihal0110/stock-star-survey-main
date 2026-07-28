@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { InvestmentEntry, DividendEntry, GoldEntry } from "@/types/investment";
-import { calculatePortfolio, xirr } from "@/lib/calculations";
+import { InvestmentEntry, DividendEntry, GoldEntry, SellEntry } from "@/types/investment";
+import { calculatePortfolio, xirr, computeActiveEntries, calculateRealizedPnLFromSells } from "@/lib/calculations";
 import { fmt, pct, cagr, daysHeld } from "@/lib/format";
 import { LivePriceData } from "@/hooks/useLivePrices";
 import { GoldPriceData } from "@/hooks/useGoldPrice";
@@ -10,9 +10,11 @@ interface Props {
   entries: InvestmentEntry[];
   dividendEntries: DividendEntry[];
   goldEntries: GoldEntry[];
+  sellEntries: SellEntry[];
   prices: Record<string, LivePriceData>;
   goldPrice: GoldPriceData | null;
   loading: boolean;
+  mfRealizedPnl?: number;
 }
 
 function StatCard({
@@ -33,15 +35,23 @@ function goldRateForEntry(entry: GoldEntry, goldPrice: GoldPriceData): number {
   return goldPrice.retail22k;
 }
 
-export default function Dashboard({ entries, dividendEntries, goldEntries, prices, goldPrice, loading }: Props) {
+export default function Dashboard({ entries, dividendEntries, goldEntries, sellEntries, prices, goldPrice, loading, mfRealizedPnl = 0 }: Props) {
   const [view, setView] = useState<"stocks" | "combined">("stocks");
 
+  // Active holdings: all buy records FIFO-minus all sell records
+  const holdEntries = useMemo(() => computeActiveEntries(entries, sellEntries), [entries, sellEntries]);
+
   const { totalInvested, stocks, sectors, totalDividends } = useMemo(
-    () => calculatePortfolio(entries, dividendEntries),
-    [entries, dividendEntries],
+    () => calculatePortfolio(holdEntries, dividendEntries),
+    [holdEntries, dividendEntries],
   );
 
-  const holdEntries = useMemo(() => entries.filter((e) => e.status !== "sold"), [entries]);
+  // Realized P&L from the sells[] array (plus any legacy status=sold entries)
+  const trades = useMemo(() => calculateRealizedPnLFromSells(entries, sellEntries), [entries, sellEntries]);
+  const realizedPnl      = trades.reduce((s, t) => s + t.pnl, 0);
+  const realizedStcg     = trades.filter(t => !t.isLongTerm).reduce((s, t) => s + t.pnl, 0);
+  const realizedLtcg     = trades.filter(t =>  t.isLongTerm).reduce((s, t) => s + t.pnl, 0);
+  const realizedTaxEst   = Math.max(0, realizedStcg) * 0.15 + Math.max(0, realizedLtcg - 100_000) * 0.10;
 
   // Gold aggregates — open positions only
   const openGoldEntries = useMemo(() => goldEntries.filter((e) => e.status !== "sold"), [goldEntries]);
@@ -80,6 +90,28 @@ export default function Dashboard({ entries, dividendEntries, goldEntries, price
   }, [stocks, prices]);
 
   const hasPrices = priceCount > 0;
+
+  // Sector-wise live P&L: aggregate priced stocks per sector
+  const sectorLive = useMemo(() => {
+    const map = new Map<string, { invested: number; investedPriced: number; currentValue: number }>();
+    for (const s of stocksWithLive) {
+      if (!map.has(s.sector)) map.set(s.sector, { invested: 0, investedPriced: 0, currentValue: 0 });
+      const d = map.get(s.sector)!;
+      d.invested += s.totalAmount;
+      if (s.currentValue !== null) {
+        d.investedPriced += s.totalAmount;
+        d.currentValue += s.currentValue;
+      }
+    }
+    return Array.from(map.entries())
+      .map(([sector, d]) => {
+        const has = d.investedPriced > 0;
+        const pnl = has ? d.currentValue - d.investedPriced : null;
+        const pnlPct = has && d.investedPriced > 0 ? (pnl! / d.investedPriced) * 100 : null;
+        return { sector, invested: d.invested, pnl, pnlPct };
+      })
+      .sort((a, b) => b.invested - a.invested);
+  }, [stocksWithLive]);
 
   // ── Stocks-only stats (P&L only against what we can actually price) ──
   const stocksPnl = hasPrices ? totalStocksValue - totalInvestedPriced : null;
@@ -240,6 +272,54 @@ export default function Dashboard({ entries, dividendEntries, goldEntries, price
         />
       </div>
 
+      {/* Realized gains section */}
+      {trades.length > 0 && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Realized Gains — {trades.length} closed trade{trades.length !== 1 ? "s" : ""}
+            </h3>
+            {displayPnl !== null && (
+              <p className="text-xs text-muted-foreground font-mono">
+                Total return (unrealized + realized):{" "}
+                <span className={`font-bold ${(displayPnl + realizedPnl) >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {(displayPnl + realizedPnl) >= 0 ? "+" : ""}₹{fmt(Math.abs(displayPnl + realizedPnl))}
+                </span>
+              </p>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-border">
+            <div className="px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-1">Realized P&L</p>
+              <p className={`font-mono font-bold text-xl ${realizedPnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {realizedPnl >= 0 ? "+" : ""}₹{fmt(Math.abs(realizedPnl))}
+              </p>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-1">STCG (&lt; 1 yr)</p>
+              <p className={`font-mono font-bold text-xl ${realizedStcg >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {realizedStcg >= 0 ? "+" : ""}₹{fmt(Math.abs(realizedStcg))}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">15% tax</p>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-1">LTCG (&gt; 1 yr)</p>
+              <p className={`font-mono font-bold text-xl ${realizedLtcg >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {realizedLtcg >= 0 ? "+" : ""}₹{fmt(Math.abs(realizedLtcg))}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">10% above ₹1L</p>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-1">Net after Est. Tax</p>
+              <p className={`font-mono font-bold text-xl ${(realizedPnl - realizedTaxEst) >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {(realizedPnl - realizedTaxEst) >= 0 ? "+" : ""}₹{fmt(Math.abs(realizedPnl - realizedTaxEst))}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">Est. tax ₹{fmt(realizedTaxEst)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* With-dividend section */}
       {totalDividends > 0 && (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -319,6 +399,42 @@ export default function Dashboard({ entries, dividendEntries, goldEntries, price
         </div>
       )}
 
+      {/* Wealth Generated — booked profits across all asset classes */}
+      {(() => {
+        const hasMfPnl = mfRealizedPnl !== 0;
+        const hasGoldPnl = goldPnl !== null;
+        const hasAnything = realizedPnl !== 0 || totalDividends > 0 || hasMfPnl || hasGoldPnl;
+        if (!hasAnything) return null;
+        const total = realizedPnl + totalDividends + mfRealizedPnl + (goldPnl ?? 0);
+        const items = [
+          { label: "Stocks Realized", value: realizedPnl, show: realizedPnl !== 0 },
+          { label: "Dividends", value: totalDividends, show: totalDividends > 0 },
+          { label: "MF Realized", value: mfRealizedPnl, show: hasMfPnl },
+          { label: "Gold (live)", value: goldPnl ?? 0, show: hasGoldPnl },
+        ].filter(i => i.show);
+        return (
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Wealth Generated</h3>
+              <span className={`font-mono font-bold text-sm ${total >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {total >= 0 ? "+" : ""}₹{fmt(Math.abs(total))} total
+              </span>
+            </div>
+            <div className={`grid divide-y sm:divide-y-0 sm:divide-x divide-border`}
+              style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}>
+              {items.map(({ label, value }) => (
+                <div key={label} className="px-5 py-4">
+                  <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                  <p className={`font-mono font-bold text-lg ${value >= 0 ? "text-green-500" : "text-red-500"}`}>
+                    {value >= 0 ? "+" : ""}₹{fmt(Math.abs(value))}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Holdings + Sectors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
@@ -357,29 +473,49 @@ export default function Dashboard({ entries, dividendEntries, goldEntries, price
           </div>
         </div>
 
+        {/* Sector-wise live P&L */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border">
-            <h3 className="font-semibold text-sm">Sector Allocation</h3>
+          <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
+            <h3 className="font-semibold text-sm">Sector P&L</h3>
+            {!hasPrices && (
+              <span className="text-xs text-muted-foreground">open Live P&L to load prices</span>
+            )}
           </div>
-          <div className="px-5 py-4 space-y-3.5">
-            {sectors
-              .sort((a, b) => b.percentage - a.percentage)
-              .map((s) => (
-                <div key={s.sector}>
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="font-medium text-foreground">{s.sector}</span>
-                    <span className="font-mono text-muted-foreground">
-                      {s.percentage.toFixed(1)}% · ₹{fmt(s.totalAmount)}
-                    </span>
+          <div className="divide-y divide-border">
+            {sectorLive.map((s) => {
+              const alloc = totalInvested > 0 ? (s.invested / totalInvested) * 100 : 0;
+              return (
+                <div key={s.sector} className="px-5 py-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-foreground">{s.sector}</span>
+                    <div className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-muted-foreground">₹{fmt(s.invested)}</span>
+                      {s.pnl !== null && (
+                        <span className={`font-semibold ${s.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          {s.pnl >= 0 ? "+" : ""}₹{fmt(Math.abs(s.pnl))}
+                        </span>
+                      )}
+                      {s.pnlPct !== null && (
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                          s.pnlPct >= 0 ? "bg-green-500/15 text-green-500" : "bg-red-500/15 text-red-500"
+                        }`}>
+                          {s.pnlPct >= 0 ? "+" : ""}{s.pnlPct.toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-primary transition-all duration-300"
-                      style={{ width: `${Math.min(s.percentage, 100)}%` }}
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        s.pnl === null ? "bg-primary" : s.pnl >= 0 ? "bg-green-500" : "bg-red-500"
+                      }`}
+                      style={{ width: `${Math.min(alloc, 100)}%` }}
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">{alloc.toFixed(1)}% allocation</p>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -425,10 +561,10 @@ export default function Dashboard({ entries, dividendEntries, goldEntries, price
       {/* Quick stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Stocks Held", value: String(stocks.length) },
-          { label: "Sectors", value: String(sectors.length) },
-          { label: "Dividends", value: totalDividends > 0 ? `₹${fmt(totalDividends)}` : "—" },
-          { label: "Gold", value: totalGoldQty > 0 ? `${totalGoldQty.toFixed(2)} g` : "—" },
+          { label: "Stocks Held",   value: String(stocks.length) },
+          { label: "Closed Trades", value: trades.length > 0 ? String(trades.length) : "—" },
+          { label: "Dividends",     value: totalDividends > 0 ? `₹${fmt(totalDividends)}` : "—" },
+          { label: "Gold",          value: totalGoldQty > 0 ? `${totalGoldQty.toFixed(2)} g` : "—" },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-xl border border-border bg-card px-4 py-3.5">
             <p className="text-xs text-muted-foreground font-medium">{label}</p>

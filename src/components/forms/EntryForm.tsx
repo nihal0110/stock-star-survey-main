@@ -21,6 +21,7 @@ const SECTORS = [
   "Energy",
   "FMCG",
   "Automobile",
+  "Auto Components & Equipment",
   "Industrials",
   "Utilities",
   "Real Estate",
@@ -262,56 +263,68 @@ export default function EntryForm({
                 </tr>
               </thead>
               <tbody>
-                {entries.map((entry) => (
-                  <tr
-                    key={entry.id}
-                    className="border-t border-border hover:bg-secondary/50 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <span className="font-mono font-semibold text-primary">{entry.stockName}</span>
-                      {entry.notes && (
-                        <p className="text-xs text-muted-foreground mt-0.5 italic max-w-xs truncate" title={entry.notes}>
-                          {entry.notes}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {entry.sector}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">
-                      {entry.date}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-right">
-                      ₹
-                      {entry.amount.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-right">
-                      {entry.quantity}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-right text-muted-foreground">
-                      ₹
-                      {entry.charges.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleEdit(entry)}
-                        className="text-primary hover:text-primary/80 text-xs font-medium transition-colors mr-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => setPendingDeleteId(entry.id)}
-                        className="text-destructive hover:text-destructive/80 text-xs font-medium transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {entries.map((entry) => {
+                  const isSold = entry.status === "sold";
+                  return (
+                    <tr
+                      key={entry.id}
+                      className={`border-t border-border transition-colors ${isSold ? "opacity-50 bg-secondary/20" : "hover:bg-secondary/50"}`}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`font-mono font-semibold ${isSold ? "text-muted-foreground line-through" : "text-primary"}`}>
+                            {entry.stockName}
+                          </span>
+                          {isSold && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 border border-red-500/30 uppercase tracking-wide">
+                              Sold
+                            </span>
+                          )}
+                        </div>
+                        {entry.notes && (
+                          <p className="text-xs text-muted-foreground mt-0.5 italic max-w-xs truncate" title={entry.notes}>
+                            {entry.notes}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {entry.sector}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-muted-foreground">
+                        {entry.date}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-right">
+                        ₹{entry.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-right">
+                        {entry.quantity}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-right text-muted-foreground">
+                        ₹{entry.charges.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {isSold ? (
+                          <span className="text-[11px] text-muted-foreground italic">manage in Sell</span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEdit(entry)}
+                              className="text-primary hover:text-primary/80 text-xs font-medium transition-colors mr-3"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setPendingDeleteId(entry.id)}
+                              className="text-destructive hover:text-destructive/80 text-xs font-medium transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -3,13 +3,15 @@ import { InvestmentEntry, DividendEntry } from "@/types/investment";
 import { calculatePortfolio } from "@/lib/calculations";
 import { fmt, daysHeld } from "@/lib/format";
 import { Filter, X, CheckSquare, Square, TrendingUp, PieChart } from "lucide-react";
+import { LivePriceData } from "@/hooks/useLivePrices";
 
 interface Props {
   entries: InvestmentEntry[];
   dividendEntries?: DividendEntry[];
+  prices?: Record<string, LivePriceData>;
 }
 
-export default function FilteredPortfolio({ entries, dividendEntries = [] }: Props) {
+export default function FilteredPortfolio({ entries, dividendEntries = [], prices = {} }: Props) {
   const holdEntries = useMemo(() => entries.filter((e) => e.status !== "sold"), [entries]);
 
   // All unique stocks and sectors
@@ -60,6 +62,25 @@ export default function FilteredPortfolio({ entries, dividendEntries = [] }: Pro
     () => calculatePortfolio(filteredEntries, filteredDividends),
     [filteredEntries, filteredDividends],
   );
+
+  // Sector-wise return: aggregate current value and cost per sector using live prices
+  const sectorReturns = useMemo(() => {
+    const map = new Map<string, { invested: number; currentValue: number; priced: boolean }>();
+    for (const s of stocks) {
+      const live = prices[s.stockName.trim().toUpperCase()] ?? prices[s.stockName.trim()];
+      const currentPrice = live?.price ?? null;
+      if (!map.has(s.sector)) map.set(s.sector, { invested: 0, currentValue: 0, priced: false });
+      const r = map.get(s.sector)!;
+      r.invested += s.totalAmount;
+      if (currentPrice !== null && s.totalQuantity > 0) {
+        r.currentValue += currentPrice * s.totalQuantity;
+        r.priced = true;
+      } else {
+        r.currentValue += s.totalAmount; // use cost if no price
+      }
+    }
+    return map;
+  }, [stocks, prices]);
 
   const includedCount = allStocks.length - excluded.size;
   const filteredOut = totalAll - totalInvested;
@@ -250,22 +271,43 @@ export default function FilteredPortfolio({ entries, dividendEntries = [] }: Pro
           <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sectors
               .sort((a, b) => b.percentage - a.percentage)
-              .map((s) => (
-                <div key={s.sector} className="space-y-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-medium">{s.sector}</span>
-                    <span className="font-mono text-muted-foreground">
-                      {s.percentage.toFixed(1)}% · ₹{fmt(s.totalAmount)}
-                    </span>
+              .map((s) => {
+                const ret = sectorReturns.get(s.sector);
+                const pnl = ret?.priced ? ret.currentValue - ret.invested : null;
+                const pnlPct = pnl !== null && ret!.invested > 0 ? (pnl / ret!.invested) * 100 : null;
+                const isPos = pnlPct !== null && pnlPct >= 0;
+                return (
+                  <div key={s.sector} className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium">{s.sector}</span>
+                      <span className="font-mono text-muted-foreground">
+                        {s.percentage.toFixed(1)}% · ₹{fmt(s.totalAmount)}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(s.percentage, 100)}%`,
+                          backgroundColor: pnlPct === null ? "hsl(var(--primary))" : isPos ? "#10b981" : "#ef4444",
+                        }}
+                      />
+                    </div>
+                    {pnlPct !== null ? (
+                      <div className="flex items-center justify-between text-[11px] font-mono">
+                        <span className="text-muted-foreground">
+                          {pnl! >= 0 ? "+" : ""}₹{fmt(Math.abs(pnl!))}
+                        </span>
+                        <span className={`font-semibold px-1.5 py-0.5 rounded ${isPos ? "text-emerald-500 bg-emerald-500/10" : "text-red-500 bg-red-500/10"}`}>
+                          {isPos ? "+" : ""}{pnlPct.toFixed(2)}%
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground/50 font-mono">no live price</p>
+                    )}
                   </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all duration-300"
-                      style={{ width: `${Math.min(s.percentage, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
       )}
